@@ -181,14 +181,39 @@ export default BaseAuthenticator.extend({
 
   authenticate (options) {
     return new Ember.RSVP.Promise((res, rej) => {
-      this.get('lock').show(options, (err, profile, jwt, accessToken, state, refreshToken) => {
-        if (err) {
-          rej(err);
+      if (options.popup) {
+        this.get('lock').show(options, (err, profile, jwt, accessToken, state, refreshToken) => {
+          if (err) {
+            rej(err);
+          } else {
+            var sessionData = { profile, jwt, accessToken, refreshToken};
+            this.afterAuth(sessionData).then(response => res(this._setupFutureEvents(response)));
+          }
+        });
+      } else {
+        var hash = this.get('lock').parseHash();
+        if (hash) {
+          if (hash.error) {
+            rej(hash.error);
+          } else {
+            var jwt = hash.id_token;
+            var accessToken = hash.access_token;
+            var refreshToken = hash.refresh_token;
+            var self = this;
+            this.get('lock').getProfile(hash.id_token, function(err, profile) {
+              if (err) {
+                rej(err);
+              } else {
+                var sessionData = { profile, jwt, accessToken, refreshToken};
+                self.afterAuth(sessionData).then(response => res(self._setupFutureEvents(response)));
+              }
+            });
+          }
         } else {
-          var sessionData = { profile, jwt, accessToken, refreshToken };
-          this.afterAuth(sessionData).then(response => res(this._setupFutureEvents(response)));
+          if (options.clicked)
+            this.get('lock').show(options);
         }
-      });
+      }
     });
   },
 

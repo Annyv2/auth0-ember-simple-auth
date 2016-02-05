@@ -153,9 +153,19 @@ import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mi
 
 export default Ember.Route.extend(ApplicationRouteMixin, {
 
+  // This implements redirect mode https://auth0.com/docs/libraries/lock/authentication-modes
+  // You can delete the init function if you want to use popup mode
+  init:function(){
+      var lockOptions = {popup:false,clicked:false};
+      this.get('session').authenticate('simple-auth-authenticator:lock', lockOptions);
+  },
+
   actions: {
     login () {
-      var lockOptions = {authParams:{scope: 'openid'}};
+      //For popup mode. just put popup:true, you can delete the clicked option
+      // var lockOptions = {popup:true, authParams:{scope: 'openid'}};
+      //For redirect mode. popup:false, clicked:true
+      var lockOptions = {popup:false,clicked:true,authParams:{scope: 'openid'}};
       this.get('session').authenticate('simple-auth-authenticator:lock', lockOptions);
     },
 
