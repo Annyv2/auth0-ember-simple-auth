@@ -179,7 +179,7 @@ export default BaseAuthenticator.extend({
     }
   },
 
-  authenticate(options) {
+  authenticate (options) {
     return new Ember.RSVP.Promise((res, rej) => {
       if (options.popup) {
         this.get('lock').show(options, (err, profile, jwt, accessToken, state, refreshToken) => {
